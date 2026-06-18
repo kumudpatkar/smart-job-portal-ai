@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "career-portal",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,11 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.17.0",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-router-dom": "^7.15.1",
-    "react-speech-kit": "^3.0.1"
+    "react-dom": "^19.2.6"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
