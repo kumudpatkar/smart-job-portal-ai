@@ -1,4 +1,4 @@
-# 🚀 Smart Job Portal AI
+### 🚀 Smart Job Portal AI
 
 An AI-powered smart job portal built with **FastAPI**, **React**, and **Google Gemini AI** that helps job seekers find jobs, improve resumes, and prepare for interviews using cutting-edge AI technology.
 
@@ -6,7 +6,7 @@ An AI-powered smart job portal built with **FastAPI**, **React**, and **Google G
 
 \---
 
-## ✨ AI Features
+### ✨ AI Features
 
 |Feature|Description|
 |-|-|
@@ -22,7 +22,7 @@ An AI-powered smart job portal built with **FastAPI**, **React**, and **Google G
 
 \---
 
-## 🛠️ Tech Stack
+### 🛠️ Tech Stack
 
 ### Backend
 
@@ -40,7 +40,7 @@ An AI-powered smart job portal built with **FastAPI**, **React**, and **Google G
 
 \---
 
-## 📁 Project Structure
+### 📁 Project Structure
 
 ```
 smart-job-portal-ai/
@@ -48,15 +48,15 @@ smart-job-portal-ai/
 │   ├── app/
 │   │   ├── models/          # Database models
 │   │   ├── routes/          # API endpoints
-│   │   │   ├── ai\_chat\_routes.py
-│   │   │   ├── resume\_analyzer\_routes.py
-│   │   │   ├── ats\_checker\_routes.py
-│   │   │   ├── voice\_interview\_routes.py
-│   │   │   ├── salary\_predictor\_routes.py
-│   │   │   ├── skill\_gap\_routes.py
-│   │   │   ├── cover\_letter\_routes.py
-│   │   │   ├── career\_roadmap\_routes.py
-│   │   │   └── job\_routes.py
+│   │   │   ├── ai\\\_chat\\\_routes.py
+│   │   │   ├── resume\\\_analyzer\\\_routes.py
+│   │   │   ├── ats\\\_checker\\\_routes.py
+│   │   │   ├── voice\\\_interview\\\_routes.py
+│   │   │   ├── salary\\\_predictor\\\_routes.py
+│   │   │   ├── skill\\\_gap\\\_routes.py
+│   │   │   ├── cover\\\_letter\\\_routes.py
+│   │   │   ├── career\\\_roadmap\\\_routes.py
+│   │   │   └── job\\\_routes.py
 │   │   └── utils/           # Helper functions
 │   └── main.py
 ├── frontend/
@@ -68,7 +68,7 @@ smart-job-portal-ai/
 
 \---
 
-## 🚀 How to Run
+### 🚀 How to Run
 
 ### Backend
 
@@ -88,19 +88,19 @@ npm run dev
 
 \---
 
-## 🔑 Environment Variables
+### 🔑 Environment Variables
 
 ## 
 
-## Create a `.env` file in the backend folder:
+Create a `.env` file in the backend folder:
 
-## 
 
-## MONGO\_URL=your\_mongodb\_url
 
-## SECRET\_KEY=your\_secret\_here
+MONGO\_URL=your\_mongodb\_url
 
-## GEMINI\_API\_KEY=your\_api\_key\_here 👩‍💻 Developer
+SECRET\_KEY=your\_secret\_here
+
+GEMINI\_API\_KEY=your\_api\_key\_here 👩‍💻 Developer
 
 
 
