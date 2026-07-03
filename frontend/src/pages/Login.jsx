@@ -1,59 +1,58 @@
 import { useState } from "react";
-import API from "../services/api";
-import { useNavigate } from "react-router-dom";
+import AuthLayout from "../layouts/AuthLayout";
+import AuthTabs from "../components/auth/AuthTabs";
+import LoginForm from "../components/auth/LoginForm";
+import RegisterForm from "../components/auth/RegisterForm";
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const Login = () => {
+  const [activeTab, setActiveTab] = useState("login");
 
-  const navigate = useNavigate();
-
-  const handleLogin = async () => {
-  try {
-    const formData = new URLSearchParams();
-
-    formData.append("username", email);
-    formData.append("password", password);
-
-    const res = await API.post(
-      "/login",
-      formData,
-      {
-        headers: {
-          "Content-Type":
-            "application/x-www-form-urlencoded",
-        },
-      }
-    );
-
-    localStorage.setItem("token", res.data.access_token);
-localStorage.setItem("userEmail", email);
-
-    navigate("/dashboard");
-
-  } catch (err) {
-    console.log(err.response?.data);
-    alert("Login Failed");
-  }
-};
   return (
-    <div>
-      <h1>Login</h1>
+    <AuthLayout>
 
-      <input
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <div
+  className="
+  w-full
+  max-w-xl
+  p-8
+  rounded-3xl
+  border
+  border-blue-400/20
+  bg-slate-900/60
+  backdrop-blur-2xl
+  shadow-[0_20px_80px_rgba(0,0,0,0.5)]
+"
+>
 
-      <input
-        placeholder="Password"
-        type="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <div className="text-center mb-8">
 
-      <button onClick={handleLogin}>Login</button>
-    </div>
+          <h2 className="text-4xl font-bold text-white mb-3">
+  Welcome to JobSpark AI
+</h2>
+
+<p className="text-blue-200">
+  Smart hiring powered by Artificial Intelligence
+</p>
+
+        </div>
+
+        <AuthTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+
+        <div className="mt-6">
+          {activeTab === "login" ? (
+            <LoginForm />
+          ) : (
+            <RegisterForm />
+          )}
+        </div>
+
+      </div>
+
+    </AuthLayout>
   );
-}
+};
 
 export default Login;

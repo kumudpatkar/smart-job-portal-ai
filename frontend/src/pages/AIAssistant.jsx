@@ -1,27 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+
+import { useState, useRef, useEffect } from "react";
+import API from "../services/api";
+import AnimatedPage from "../components/AnimatedPage";
+import { Bot, User, SendHorizonal } from "lucide-react";
 
 export default function AIAssistant() {
   const [messages, setMessages] = useState([
     {
       sender: "ai",
-      text: "Hello 👋 I'm your AI Assistant. Ask me anything."
-    }
+      text: "👋 Hello! I'm your AI Career Assistant. Ask me about jobs, resumes, interviews, or career guidance.",
+    },
   ]);
 
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth"
-    });
-  };
+  const bottomRef = useRef(null);
 
   useEffect(() => {
-    scrollToBottom();
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth",
+    });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -29,37 +28,37 @@ export default function AIAssistant() {
 
     const userMessage = {
       sender: "user",
-      text: question
+      text: question,
     };
 
     setMessages((prev) => [...prev, userMessage]);
 
     const currentQuestion = question;
+
     setQuestion("");
     setLoading(true);
 
     try {
-      const res = await axios.post(
-        "http://localhost:8000/api/ai-chat",
-        {
-          question: currentQuestion
-        }
-      );
+      const res = await API.post("/api/ai-chat", {
+        question: currentQuestion,
+      });
 
       setMessages((prev) => [
         ...prev,
         {
           sender: "ai",
-          text: res.data.answer
-        }
+          text: res.data.answer,
+        },
       ]);
-    } catch (error) {
+    } catch (err) {
+      console.log(err);
+
       setMessages((prev) => [
         ...prev,
         {
           sender: "ai",
-          text: "❌ Failed to get response from AI."
-        }
+          text: "❌ Failed to get AI response.",
+        },
       ]);
     }
 
@@ -73,128 +72,107 @@ export default function AIAssistant() {
   };
 
   return (
-    <div
-      style={{
-        background: "#0f172a",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        color: "white"
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          padding: "18px",
-          borderBottom: "1px solid #334155",
-          fontSize: "22px",
-          fontWeight: "bold"
-        }}
-      >
-        🤖 AI Assistant
-      </div>
+    <AnimatedPage>
+      <div className="h-screen bg-slate-100 flex flex-col">
 
-      {/* Messages */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "20px"
-        }}
-      >
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              display: "flex",
-              justifyContent:
+        {/* Header */}
+
+        <div className="bg-white shadow-md px-6 py-4 flex items-center gap-3">
+
+          <Bot className="text-blue-600" size={32} />
+
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">
+              AI Career Assistant
+            </h1>
+
+            <p className="text-sm text-slate-500">
+              Ask anything about jobs, resumes and interviews
+            </p>
+          </div>
+
+        </div>
+
+        {/* Chat */}
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`flex ${
                 msg.sender === "user"
-                  ? "flex-end"
-                  : "flex-start",
-              marginBottom: "15px"
-            }}
-          >
-            <div
-              style={{
-                maxWidth: "70%",
-                padding: "12px 16px",
-                borderRadius: "16px",
-                background:
+                  ? "justify-end"
+                  : "justify-start"
+              }`}
+            >
+              <div
+                className={`max-w-3xl rounded-2xl px-5 py-4 shadow flex gap-3 ${
                   msg.sender === "user"
-                    ? "#2563eb"
-                    : "#1e293b",
-                whiteSpace: "pre-wrap"
-              }}
-            >
-              {msg.text}
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-slate-700"
+                }`}
+              >
+                <div>
+                  {msg.sender === "user" ? (
+                    <User size={22} />
+                  ) : (
+                    <Bot size={22} className="text-blue-600" />
+                  )}
+                </div>
+
+                <div className="whitespace-pre-wrap">
+                  {msg.text}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {loading && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-start"
-            }}
-          >
-            <div
-              style={{
-                background: "#1e293b",
-                padding: "12px 16px",
-                borderRadius: "16px"
-              }}
-            >
-              AI is typing...
+          {loading && (
+            <div className="flex justify-start">
+
+              <div className="bg-white rounded-2xl px-5 py-4 shadow">
+
+                🤖 AI is thinking...
+
+              </div>
+
             </div>
+          )}
+
+          <div ref={bottomRef}></div>
+
+        </div>
+
+        {/* Input */}
+
+        <div className="bg-white border-t p-5">
+
+          <div className="flex gap-3">
+
+            <input
+              type="text"
+              placeholder="Ask your question..."
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="flex-1 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl flex items-center gap-2 transition"
+            >
+              <SendHorizonal size={18} />
+              Send
+            </button>
+
           </div>
-        )}
 
-        <div ref={messagesEndRef}></div>
+        </div>
+
       </div>
-
-      {/* Input */}
-      <div
-        style={{
-          padding: "15px",
-          borderTop: "1px solid #334155",
-          display: "flex",
-          gap: "10px"
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Ask anything..."
-          value={question}
-          onChange={(e) =>
-            setQuestion(e.target.value)
-          }
-          onKeyDown={handleKeyDown}
-          style={{
-            flex: 1,
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none",
-            outline: "none",
-            background: "#1e293b",
-            color: "white"
-          }}
-        />
-
-        <button
-          onClick={sendMessage}
-          style={{
-            background: "#2563eb",
-            color: "white",
-            border: "none",
-            padding: "12px 20px",
-            borderRadius: "10px",
-            cursor: "pointer"
-          }}
-        >
-          Send
-        </button>
-      </div>
-    </div>
+    </AnimatedPage>
   );
 }
