@@ -1,26 +1,36 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/api";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  fullName: "",
+  email: "",
+  password: "",
+  role: "candidate",
+});
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify(form)
-    );
+    try {
+      const { data } = await API.post("/auth/register", form);
 
-    alert("Registration Successful");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("isLoggedIn", "true");
 
-    navigate("/dashboard");
+      alert("Registration Successful");
+
+      navigate("/dashboard");
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+          "Registration Failed"
+      );
+    }
   };
 
   return (
@@ -32,14 +42,14 @@ const RegisterForm = () => {
         type="text"
         placeholder="Full Name"
         required
-        value={form.name}
+        value={form.fullName}
         onChange={(e) =>
           setForm({
             ...form,
-            name: e.target.value,
+            fullName: e.target.value,
           })
         }
-        className="w-full border p-3 rounded-xl"
+        className="w-full border p-3 rounded-xl text-white placeholder:text-slate-400"
       />
 
       <input

@@ -1,169 +1,104 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import API from "../services/api";
 
 function CoverLetter() {
+  const [jobs, setJobs] = useState([]);
+  const [selectedJob, setSelectedJob] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const [name, setName] = useState("");
-    const [role, setRole] = useState("");
-    const [company, setCompany] = useState("");
-    const [skills, setSkills] = useState("");
+  useEffect(() => {
+    fetchJobs();
+  }, []);
 
-    const [letter, setLetter] = useState("");
-    const [pdfUrl, setPdfUrl] = useState("");
+  const fetchJobs = async () => {
+    try {
+      const { data } = await API.get("/jobs");
+      setJobs(data.jobs);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    const generateLetter = async () => {
+  const generateCoverLetter = async () => {
+    if (!selectedJob) {
+      alert("Please select a job.");
+      return;
+    }
 
-        try {
+    try {
+      setLoading(true);
 
-            const res = await API.post(
-                "/api/generate-cover-letter",
-                {
-                    name,
-                    role,
-                    company,
-                    skills
-                }
-            );
+      const { data } = await API.post(
+        `/jobs/${selectedJob}/cover-letter`
+      );
 
-            setLetter(res.data.cover_letter);
-            setPdfUrl(res.data.pdf_url);   // PDF path from backend
+      setCoverLetter(data.coverLetter);
 
-        } catch (err) {
+    } catch (error) {
+      console.log(error);
+      alert("Failed to generate cover letter.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            console.log(err);
-            alert("Failed to generate cover letter");
-        }
-    };
+  const copyLetter = () => {
+    navigator.clipboard.writeText(coverLetter);
+    alert("Cover letter copied!");
+  };
 
-    return (
+  return (
+    <div className="max-w-5xl mx-auto p-8">
 
-        <div
-            style={{
-                padding: "20px",
-                maxWidth: "800px",
-                margin: "auto"
-            }}
-        >
+      <h1 className="text-4xl font-bold mb-8">
+        AI Cover Letter Generator
+      </h1>
 
-            <h1>AI Cover Letter Generator</h1>
+      <select
+        className="border p-3 rounded-xl w-full"
+        value={selectedJob}
+        onChange={(e) => setSelectedJob(e.target.value)}
+      >
+        <option value="">Select Job</option>
 
-            <hr />
-            <br />
+        {jobs.map((job) => (
+          <option key={job._id} value={job._id}>
+            {job.title}
+          </option>
+        ))}
+      </select>
 
-            <input
-                type="text"
-                placeholder="Your Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "10px"
-                }}
-            />
+      <button
+        onClick={generateCoverLetter}
+        className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl"
+      >
+        {loading ? "Generating..." : "Generate Cover Letter"}
+      </button>
 
-            <input
-                type="text"
-                placeholder="Job Role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "10px"
-                }}
-            />
+      {coverLetter && (
+        <div className="mt-8 bg-white rounded-2xl shadow-lg p-8">
 
-            <input
-                type="text"
-                placeholder="Company Name"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "10px"
-                }}
-            />
+          <h2 className="text-2xl font-bold mb-4">
+            AI Generated Cover Letter
+          </h2>
 
-            <input
-                type="text"
-                placeholder="Your Skills"
-                value={skills}
-                onChange={(e) => setSkills(e.target.value)}
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "10px"
-                }}
-            />
+          <div className="whitespace-pre-wrap border rounded-xl p-6 bg-gray-50">
+            {coverLetter}
+          </div>
 
-            <button
-                onClick={generateLetter}
-                style={{
-                    padding: "12px 20px",
-                    cursor: "pointer",
-                    marginTop: "10px"
-                }}
-            >
-                Generate Cover Letter
-            </button>
-
-            {/* GENERATED LETTER */}
-            {letter && (
-
-                <div
-                    style={{
-                        marginTop: "30px",
-                        border: "1px solid gray",
-                        padding: "20px",
-                        borderRadius: "10px",
-                        whiteSpace: "pre-line"
-                    }}
-                >
-
-                    <h2>Generated Cover Letter</h2>
-                    <hr />
-
-                    {letter}
-
-                    {/* DOWNLOAD PDF BUTTON */}
-                    {pdfUrl && (
-
-                        <div style={{ marginTop: "15px" }}>
-
-                            <a
-                                href={`http://127.0.0.1:8000/${pdfUrl}`}
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-
-                                <button
-                                    style={{
-                                        padding: "10px 15px",
-                                        marginTop: "10px",
-                                        backgroundColor: "green",
-                                        color: "white",
-                                        border: "none",
-                                        borderRadius: "5px",
-                                        cursor: "pointer"
-                                    }}
-                                >
-                                    Download PDF
-                                </button>
-
-                            </a>
-
-                        </div>
-
-                    )}
-
-                </div>
-
-            )}
+          <button
+            onClick={copyLetter}
+            className="mt-6 px-5 py-2 bg-green-600 text-white rounded-xl"
+          >
+            Copy Cover Letter
+          </button>
 
         </div>
-    );
+      )}
+
+    </div>
+  );
 }
 
 export default CoverLetter;

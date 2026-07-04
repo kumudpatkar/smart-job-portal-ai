@@ -1,29 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import API from "../services/api";
-import AnimatedPage from "../components/AnimatedPage";
-import { Sparkles, MessageSquare } from "lucide-react";
 
 function Interview() {
-  const [role, setRole] = useState("");
+  const [jobs, setJobs] = useState([]);
+  const [selectedJob, setSelectedJob] = useState("");
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const { data } = await API.get("/jobs");
+      setJobs(data.jobs);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const generateQuestions = async () => {
-    if (!role.trim()) {
-      alert("Please enter a job role.");
+    if (!selectedJob) {
+      alert("Please select a job.");
       return;
     }
 
     try {
       setLoading(true);
 
-      const res = await API.post("/api/interview-questions", {
-        role,
-      });
+      const { data } = await API.post(
+        `/jobs/${selectedJob}/interview-questions`
+      );
 
-      setQuestions(res.data.questions || []);
-    } catch (err) {
-      console.log(err);
+      setQuestions(data.questions);
+
+    } catch (error) {
+      console.log(error);
       alert("Failed to generate interview questions.");
     } finally {
       setLoading(false);
@@ -31,75 +44,57 @@ function Interview() {
   };
 
   return (
-    <AnimatedPage>
-      <div className="min-h-screen bg-gray-100 p-8">
-        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto p-8">
 
-          <div className="flex items-center gap-3 mb-8">
-            <Sparkles className="text-blue-600" size={32} />
-            <h1 className="text-3xl font-bold text-gray-800">
-              AI Mock Interview
-            </h1>
-          </div>
+      <h1 className="text-4xl font-bold mb-8">
+        AI Interview Questions
+      </h1>
 
-          <div className="flex flex-col md:flex-row gap-4">
+      <select
+        className="border p-3 rounded-xl w-full"
+        value={selectedJob}
+        onChange={(e) => setSelectedJob(e.target.value)}
+      >
+        <option value="">Select Job</option>
 
-            <input
-              type="text"
-              placeholder="Enter Job Role (Example: Java Developer)"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="flex-1 border rounded-xl p-4 outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        {jobs.map((job) => (
+          <option key={job._id} value={job._id}>
+            {job.title}
+          </option>
+        ))}
 
-            <button
-              onClick={generateQuestions}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-xl transition disabled:opacity-50"
-            >
-              {loading ? "Generating..." : "Generate"}
-            </button>
+      </select>
 
-          </div>
+      <button
+        onClick={generateQuestions}
+        className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl"
+      >
+        {loading ? "Generating..." : "Generate Questions"}
+      </button>
 
-          {questions.length > 0 && (
-            <div className="mt-10">
+      {questions.length > 0 && (
 
-              <h2 className="text-2xl font-semibold mb-6 text-gray-800">
-                Interview Questions
-              </h2>
+        <div className="mt-8 bg-white rounded-2xl shadow-lg p-8">
 
-              <div className="space-y-4">
+          <h2 className="text-2xl font-bold mb-6">
+            Interview Questions
+          </h2>
 
-                {questions.map((question, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 border rounded-xl p-5 flex gap-4"
-                  >
-                    <MessageSquare
-                      className="text-blue-600 mt-1"
-                      size={22}
-                    />
+          <ol className="list-decimal ml-6 space-y-4">
 
-                    <div>
-                      <h3 className="font-semibold text-gray-800">
-                        Question {index + 1}
-                      </h3>
+            {questions.map((question, index) => (
+              <li key={index}>
+                {question}
+              </li>
+            ))}
 
-                      <p className="text-gray-700 mt-2">
-                        {question}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-
-              </div>
-            </div>
-          )}
+          </ol>
 
         </div>
-      </div>
-    </AnimatedPage>
+
+      )}
+
+    </div>
   );
 }
 

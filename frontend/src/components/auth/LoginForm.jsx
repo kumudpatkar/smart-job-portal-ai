@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../../services/api";
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -16,24 +17,23 @@ const LoginForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const savedUser = JSON.parse(localStorage.getItem("user"));
+    try {
+      const { data } = await API.post("/auth/login", formData);
 
-    if (!savedUser) {
-      alert("Please register first");
-      return;
-    }
-
-    if (
-      savedUser.email === formData.email &&
-      savedUser.password === formData.password
-    ) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("isLoggedIn", "true");
+
+      alert("Login Successful");
+
       navigate("/dashboard");
-    } else {
-      alert("Invalid Email or Password");
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Login Failed"
+      );
     }
   };
 
@@ -51,7 +51,7 @@ const LoginForm = () => {
           onChange={handleChange}
           placeholder="Enter your email"
           required
-          className="w-full px-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          className="w-full px-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-400"
         />
       </div>
 
@@ -67,13 +67,13 @@ const LoginForm = () => {
           onChange={handleChange}
           placeholder="Enter your password"
           required
-          className="w-full px-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          className="w-full px-4 py-3 rounded-xl bg-slate-800/80 border border-slate-700 text-white placeholder-slate-400"
         />
       </div>
 
       <button
         type="submit"
-        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-lg hover:scale-105 transition-all duration-300"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold"
       >
         Sign In
       </button>

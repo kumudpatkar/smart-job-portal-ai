@@ -3,178 +3,200 @@ import API from "../services/api";
 
 function SkillGap() {
 
-    const [role, setRole] = useState("");
-    const [skills, setSkills] = useState("");
-    const [result, setResult] = useState(null);
+  const [targetRole, setTargetRole] = useState("");
 
-    const analyzeSkills = async () => {
+  const [result, setResult] = useState(null);
 
-        try {
+  const [loading, setLoading] = useState(false);
 
-            const res = await API.post(
-                "/api/skill-gap",
+  const analyze = async () => {
+
+    if (!targetRole) {
+      alert("Enter target role");
+      return;
+    }
+
+    try {
+
+      setLoading(true);
+
+      const { data } = await API.post(
+        "/skill-gap/analyze",
+        {
+          targetRole,
+        }
+      );
+
+      setResult(data.analysis);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Skill Gap Analysis Failed");
+
+    } finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+  return (
+
+    <div className="max-w-6xl mx-auto p-8">
+
+      <h1 className="text-4xl font-bold mb-8">
+
+        AI Skill Gap Analyzer
+
+      </h1>
+
+      <input
+        type="text"
+        placeholder="Target Role (Example: AI Engineer)"
+        value={targetRole}
+        onChange={(e) => setTargetRole(e.target.value)}
+        className="w-full border rounded-xl p-3"
+      />
+
+      <button
+        onClick={analyze}
+        className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-xl"
+      >
+
+        {loading ? "Analyzing..." : "Analyze"}
+
+      </button>
+
+      {
+
+        result && (
+
+          <div className="mt-10 space-y-8">
+
+            <div className="bg-white rounded-2xl shadow p-6">
+
+              <h2 className="text-2xl font-bold mb-4">
+
+                Current Skills
+
+              </h2>
+
+              <ul className="list-disc ml-6">
+
                 {
-                    role: role,
-                    skills: skills
+
+                  result.currentSkills.map((skill, index) => (
+
+                    <li key={index}>{skill}</li>
+
+                  ))
+
                 }
-            );
 
-            setResult(res.data);
+              </ul>
 
-        }
+            </div>
 
-        catch (err) {
+            <div className="bg-white rounded-2xl shadow p-6">
 
-            console.log(err);
+              <h2 className="text-2xl font-bold mb-4">
 
-            alert("Analysis Failed");
+                Missing Skills
 
-        }
+              </h2>
 
-    };
+              <ul className="list-disc ml-6">
 
-    return (
+                {
 
-        <div
-            style={{
-                padding: "20px",
-                maxWidth: "900px",
-                margin: "auto"
-            }}
-        >
+                  result.missingSkills.map((skill, index) => (
 
-            <h1>
-                AI Skill Gap Analyzer
-            </h1>
+                    <li key={index}>{skill}</li>
 
-            <hr />
+                  ))
 
-            <br />
-
-            <input
-                type="text"
-                placeholder="Target Role (Example: AI ML Engineer)"
-                value={role}
-                onChange={(e) =>
-                    setRole(e.target.value)
                 }
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "15px"
-                }}
-            />
 
-            <textarea
-                placeholder="Enter your skills separated by comma
-Example:
-Python, SQL, Machine Learning"
-                value={skills}
-                onChange={(e) =>
-                    setSkills(e.target.value)
+              </ul>
+
+            </div>
+
+            <div className="bg-white rounded-2xl shadow p-6">
+
+              <h2 className="text-2xl font-bold mb-4">
+
+                Learning Path
+
+              </h2>
+
+              <ol className="list-decimal ml-6">
+
+                {
+
+                  result.learningPath.map((item, index) => (
+
+                    <li key={index}>{item}</li>
+
+                  ))
+
                 }
-                rows="5"
-                style={{
-                    width: "100%",
-                    padding: "10px"
-                }}
-            />
 
-            <br />
-            <br />
+              </ol>
 
-            <button
-                onClick={analyzeSkills}
-                style={{
-                    padding: "12px 20px",
-                    cursor: "pointer"
-                }}
-            >
-                Analyze Skills
-            </button>
+            </div>
 
-            {
+            <div className="bg-white rounded-2xl shadow p-6">
 
-                result &&
+              <h2 className="text-2xl font-bold mb-4">
 
-                <div
-                    style={{
-                        marginTop: "30px",
-                        border: "1px solid gray",
-                        padding: "20px",
-                        borderRadius: "10px"
-                    }}
-                >
+                Recommended Courses
 
-                    <h2>
-                        Analysis Report
-                    </h2>
+              </h2>
 
-                    <hr />
+              <ul className="list-disc ml-6">
 
-                    <h3>
-                        Target Role:
-                    </h3>
+                {
 
-                    <p>
-                        {result.target_role}
-                    </p>
+                  result.recommendedCourses.map((course, index) => (
 
-                    <h3>
-                        Match Score:
-                    </h3>
+                    <li key={index}>{course}</li>
 
-                    <h2>
-                        {result.match_score}%
-                    </h2>
+                  ))
 
-                    <h3>
-                        Your Skills:
-                    </h3>
+                }
 
-                    <ul>
+              </ul>
 
-                        {
-                            result.your_skills.map(
-                                (skill, index) => (
+            </div>
 
-                                    <li key={index}>
-                                        {skill}
-                                    </li>
+            <div className="bg-white rounded-2xl shadow p-6">
 
-                                )
-                            )
-                        }
+              <h2 className="text-2xl font-bold mb-4">
 
-                    </ul>
+                AI Career Advice
 
-                    <h3>
-                        Missing Skills:
-                    </h3>
+              </h2>
 
-                    <ul>
+              <p>
 
-                        {
-                            result.missing_skills.map(
-                                (skill, index) => (
+                {result.careerAdvice}
 
-                                    <li key={index}>
-                                        ❌ {skill}
-                                    </li>
+              </p>
 
-                                )
-                            )
-                        }
+            </div>
 
-                    </ul>
+          </div>
 
-                </div>
+        )
 
-            }
+      }
 
-        </div>
+    </div>
 
-    );
+  );
 
 }
 

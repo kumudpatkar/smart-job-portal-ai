@@ -2,167 +2,114 @@ import { useState } from "react";
 import API from "../services/api";
 
 function SalaryPredictor() {
+  const [role, setRole] = useState("");
+  const [experience, setExperience] = useState("");
+  const [skills, setSkills] = useState("");
 
-    const [role, setRole] = useState("");
-    const [experience, setExperience] = useState("");
-    const [skills, setSkills] = useState("");
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    const [result, setResult] = useState(null);
+  const predictSalary = async () => {
+    if (!role || !experience || !skills) {
+      alert("Please fill all fields.");
+      return;
+    }
 
-    const predictSalary = async () => {
+    try {
+      setLoading(true);
 
-        try {
+      const { data } = await API.post("/salary/predict", {
+        role,
+        experience: Number(experience),
+        skills,
+      });
 
-            const res = await API.post(
-                "/api/predict-salary",
-                {
-                    role: role,
-                    experience: parseInt(experience),
-                    skills: skills
-                }
-            );
+      setResult(data.prediction);
 
-            setResult(res.data);
+    } catch (error) {
+      console.log(error);
+      alert("Salary prediction failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        }
+  return (
+    <div className="max-w-5xl mx-auto p-8">
 
-        catch (err) {
+      <h1 className="text-4xl font-bold mb-8">
+        AI Salary Predictor
+      </h1>
 
-            console.log(err);
+      <input
+        type="text"
+        placeholder="Job Role"
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+        className="w-full border rounded-xl p-3 mb-4"
+      />
 
-            alert("Salary prediction failed");
+      <input
+        type="number"
+        placeholder="Years of Experience"
+        value={experience}
+        onChange={(e) => setExperience(e.target.value)}
+        className="w-full border rounded-xl p-3 mb-4"
+      />
 
-        }
+      <textarea
+        rows={5}
+        placeholder="Skills (Python, React, Node.js, AWS...)"
+        value={skills}
+        onChange={(e) => setSkills(e.target.value)}
+        className="w-full border rounded-xl p-3"
+      />
 
-    };
+      <button
+        onClick={predictSalary}
+        className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl"
+      >
+        {loading ? "Predicting..." : "Predict Salary"}
+      </button>
 
-    return (
+      {result && (
 
-        <div
-            style={{
-                padding: "20px",
-                maxWidth: "800px",
-                margin: "auto"
-            }}
-        >
+        <div className="mt-10 bg-white shadow-lg rounded-2xl p-8">
 
-            <h1>
-                AI Salary Predictor
-            </h1>
+          <h2 className="text-3xl font-bold text-green-600 mb-6">
+            Estimated Salary
+          </h2>
 
-            <hr />
+          <p>
+            <strong>Role:</strong> {result.role}
+          </p>
 
-            <br />
+          <p>
+            <strong>Experience:</strong> {result.experience} Years
+          </p>
 
-            <input
-                type="text"
-                placeholder="Job Role"
-                value={role}
-                onChange={(e) =>
-                    setRole(e.target.value)
-                }
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "10px"
-                }}
-            />
+          <p className="text-2xl font-bold mt-6">
+            ₹ {Number(result.estimatedSalary).toLocaleString()} / Year
+          </p>
 
-            <input
-                type="number"
-                placeholder="Years of Experience"
-                value={experience}
-                onChange={(e) =>
-                    setExperience(e.target.value)
-                }
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "10px"
-                }}
-            />
+          <p className="mt-4">
+            <strong>Salary Range:</strong> {result.salaryRange}
+          </p>
 
-            <textarea
-                placeholder="Skills (Example: Python, AWS, Machine Learning)"
-                value={skills}
-                onChange={(e) =>
-                    setSkills(e.target.value)
-                }
-                rows="4"
-                style={{
-                    width: "100%",
-                    padding: "10px"
-                }}
-            />
+          <div className="mt-6 p-4 bg-gray-100 rounded-xl">
+            <strong>AI Reason:</strong>
 
-            <br />
-            <br />
-
-            <button
-                onClick={predictSalary}
-                style={{
-                    padding: "12px 20px"
-                }}
-            >
-                Predict Salary
-            </button>
-
-            {
-
-                result &&
-
-                <div
-                    style={{
-                        marginTop: "30px",
-                        border: "1px solid gray",
-                        padding: "20px",
-                        borderRadius: "10px"
-                    }}
-                >
-
-                    <h2>
-                        Prediction Result
-                    </h2>
-
-                    <hr />
-
-                    <p>
-                        <b>Role :</b>
-                        {" "}
-                        {result.role}
-                    </p>
-
-                    <p>
-                        <b>Experience :</b>
-                        {" "}
-                        {result.experience}
-                        {" "}
-                        Years
-                    </p>
-
-                    <h2>
-
-                        Estimated Salary
-
-                    </h2>
-
-                    <h1>
-
-                        ₹
-                        {result.estimated_salary.toLocaleString()}
-                        {" "}
-                        / Year
-
-                    </h1>
-
-                </div>
-
-            }
+            <p className="mt-2">
+              {result.reason}
+            </p>
+          </div>
 
         </div>
 
-    );
+      )}
 
+    </div>
+  );
 }
 
 export default SalaryPredictor;

@@ -5,7 +5,26 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import { useEffect, useState } from "react";
+import API from "../services/api";
+
 const AIInsights = () => {
+
+  const [dashboard, setDashboard] = useState(null);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      const { data } = await API.get("/resume/dashboard");
+      setDashboard(data.dashboard);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-indigo-700 via-blue-700 to-purple-700 rounded-3xl p-7 text-white shadow-2xl">
 
@@ -40,42 +59,56 @@ const AIInsights = () => {
             </p>
 
             <h2 className="text-4xl font-bold mt-2">
-              92%
+              {dashboard ? `${dashboard.atsScore}%` : "..."}
             </h2>
+
           </div>
 
           <TrendingUp size={40} />
+
         </div>
 
+      </div>
+
+      {/* AI Summary */}
+
+      <div className="mb-6">
+        <p className="text-sm text-blue-100">
+          {dashboard?.summary || "Loading summary..."}
+        </p>
       </div>
 
       {/* Suggestions */}
 
       <div className="space-y-4">
 
-        <div className="flex gap-3 items-start">
-          <CheckCircle2 className="text-green-300 mt-1" />
+        {dashboard?.suggestions?.length > 0 ? (
 
-          <p>
-            Add more cloud computing skills to improve job matching.
-          </p>
-        </div>
+          dashboard.suggestions.slice(0, 3).map((item, index) => (
 
-        <div className="flex gap-3 items-start">
-          <CheckCircle2 className="text-green-300 mt-1" />
+            <div
+              key={index}
+              className="flex gap-3 items-start"
+            >
+              <CheckCircle2 className="text-green-300 mt-1" />
 
-          <p>
-            Your ATS score increased by 12% this week.
-          </p>
-        </div>
+              <p>{item}</p>
 
-        <div className="flex gap-3 items-start">
-          <Sparkles className="text-yellow-300 mt-1" />
+            </div>
 
-          <p>
-            AI recommends applying to 24 new Software Engineer jobs.
-          </p>
-        </div>
+          ))
+
+        ) : (
+
+          <div className="flex gap-3 items-start">
+
+            <Sparkles className="text-yellow-300 mt-1" />
+
+            <p>No AI suggestions available.</p>
+
+          </div>
+
+        )}
 
       </div>
 

@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
+import API from "../services/api";
+
 import AnimatedPage from "../components/AnimatedPage";
 import StatCard from "../components/StatCard";
 import RecentJobs from "../components/RecentJobs";
@@ -15,6 +18,21 @@ import {
 const Dashboard = () => {
   const user = JSON.parse(localStorage.getItem("user")) || {};
 
+  const [dashboard, setDashboard] = useState(null);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      const { data } = await API.get("/resume/dashboard");
+      setDashboard(data.dashboard);
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+    }
+  };
+
   return (
     <DashboardLayout>
       <AnimatedPage>
@@ -24,7 +42,7 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold text-gray-800">
             Welcome back,{" "}
             <span className="text-blue-600">
-              {user.name || "User"}
+              {user.fullName || "User"}
             </span>{" "}
             👋
           </h1>
@@ -38,40 +56,44 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
           <StatCard
-            title="Applied Jobs"
-            value="18"
-            subtitle="This Month"
+            title="Projects"
+            value={dashboard ? dashboard.totalProjects : "..."}
+            subtitle="Resume Projects"
             color="bg-blue-100"
             icon={<Briefcase size={28} className="text-blue-600" />}
           />
 
           <StatCard
-            title="Saved Jobs"
-            value="42"
-            subtitle="Bookmarked"
+            title="Skills"
+            value={dashboard ? dashboard.totalSkills : "..."}
+            subtitle="Detected Skills"
             color="bg-pink-100"
             icon={<Bookmark size={28} className="text-pink-600" />}
           />
 
           <StatCard
             title="ATS Score"
-            value="92%"
-            subtitle="Excellent Resume"
+            value={dashboard ? `${dashboard.atsScore}%` : "..."}
+            subtitle="AI Resume Score"
             color="bg-green-100"
             icon={<FileCheck size={28} className="text-green-600" />}
           />
 
           <StatCard
-            title="AI Matches"
-            value="126"
-            subtitle="Recommended Jobs"
+            title="AI Suggestions"
+            value={
+              dashboard
+                ? dashboard.suggestions.length
+                : "..."
+            }
+            subtitle="Resume Improvements"
             color="bg-purple-100"
             icon={<Brain size={28} className="text-purple-600" />}
           />
 
         </div>
 
-        {/* Bottom */}
+        {/* Bottom Section */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mt-10">
 
           <div className="xl:col-span-2 space-y-8">
