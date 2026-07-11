@@ -1,48 +1,108 @@
 import { Camera, Pencil } from "lucide-react";
+import { useRef, useState } from "react";
+import API from "../services/api";
 
 const ProfileHeader = () => {
-  const user =
-    JSON.parse(localStorage.getItem("user")) || {};
+
+  const fileInputRef = useRef();
+
+  const [user, setUser] = useState(
+    JSON.parse(localStorage.getItem("user")) || {}
+  );
+
+  const uploadPhoto = async (e) => {
+
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+
+    formData.append("photo", file);
+
+    try {
+
+      const { data } = await API.post(
+        "/profile/upload-photo",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const updatedUser = {
+        ...user,
+        profileImage: data.image,
+      };
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(updatedUser)
+      );
+
+      setUser(updatedUser);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Image upload failed");
+
+    }
+
+  };
 
   return (
+
     <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 rounded-3xl shadow-xl overflow-hidden">
 
-      {/* Cover Section */}
-
       <div className="h-40"></div>
-
-      {/* Profile */}
 
       <div className="bg-white px-10 pb-8">
 
         <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between -mt-16">
-
-          {/* Left */}
 
           <div className="flex flex-col lg:flex-row items-center gap-6">
 
             <div className="relative">
 
               <img
-                src="https://ui-avatars.com/api/?name=JobSpark&background=2563eb&color=fff&size=200"
+                src={
+                  user.profileImage
+                    ? `http://localhost:5000/${user.profileImage.replace(/\\/g, "/")}`
+                    : "https://ui-avatars.com/api/?name=JobSpark&background=2563eb&color=fff&size=200"
+                }
                 alt="profile"
-                className="w-36 h-36 rounded-full border-4 border-white shadow-xl"
+                className="w-36 h-36 rounded-full border-4 border-white shadow-xl object-cover"
               />
 
-              <button className="absolute bottom-2 right-2 bg-blue-600 p-2 rounded-full text-white hover:bg-blue-700">
+              <button
+                onClick={() => fileInputRef.current.click()}
+                className="absolute bottom-2 right-2 bg-blue-600 p-2 rounded-full text-white hover:bg-blue-700"
+              >
                 <Camera size={18} />
               </button>
+
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={uploadPhoto}
+                hidden
+              />
 
             </div>
 
             <div>
 
               <h1 className="text-4xl font-bold text-slate-800">
-                {user.name || "Kumud Patkar"}
+                {user.fullName || "Kumud Patkar"}
               </h1>
 
               <p className="text-slate-500 mt-2">
-                {user.email || "kumud@gmail.com"}
+                {user.email}
               </p>
 
               <p className="text-blue-600 mt-2 font-medium">
@@ -53,8 +113,6 @@ const ProfileHeader = () => {
 
           </div>
 
-          {/* Right */}
-
           <button className="mt-6 lg:mt-0 flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:scale-105 transition-all">
 
             <Pencil size={18} />
@@ -64,8 +122,6 @@ const ProfileHeader = () => {
           </button>
 
         </div>
-
-        {/* Completion */}
 
         <div className="mt-10">
 
@@ -92,7 +148,9 @@ const ProfileHeader = () => {
       </div>
 
     </div>
+
   );
+
 };
 
 export default ProfileHeader;

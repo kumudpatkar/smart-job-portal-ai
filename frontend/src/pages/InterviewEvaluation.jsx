@@ -3,210 +3,189 @@ import API from "../services/api";
 
 function InterviewEvaluation() {
 
-    const [question, setQuestion] = useState("");
-    const [answer, setAnswer] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
 
-    const [result, setResult] = useState(null);
+  const [result, setResult] = useState(null);
 
-    const evaluateAnswer = async () => {
+  const [loading, setLoading] = useState(false);
 
-        if (question === "" || answer === "") {
+  const evaluate = async () => {
 
-            alert("Please enter question and answer");
+    if (!question || !answer) {
+      alert("Please enter both question and answer.");
+      return;
+    }
 
-            return;
+    try {
+
+      setLoading(true);
+
+      const { data } = await API.post(
+        "/interview-evaluation/evaluate",
+        {
+          question,
+          answer,
         }
+      );
 
-        try {
+      setResult(data.result);
 
-            const res = await API.post(
-                "/api/evaluate-answer",
-                {
-                    question: question,
-                    answer: answer
-                }
-            );
+    } catch (error) {
 
-            setResult(res.data);
+      console.log(error);
 
-        }
+      alert("Evaluation Failed");
 
-        catch (err) {
+    } finally {
 
-            console.log(err);
+      setLoading(false);
 
-            alert("Evaluation Failed");
+    }
 
-        }
+  };
 
-    };
+  return (
 
-    return (
+    <div className="max-w-5xl mx-auto p-8">
 
-        <div
-            style={{
-                padding: "20px",
-                maxWidth: "900px",
-                margin: "auto"
-            }}
-        >
+      <h1 className="text-4xl font-bold mb-8">
 
-            <h1>
-                AI Interview Answer Evaluation
+        AI Interview Evaluation
+
+      </h1>
+
+      <textarea
+        rows={3}
+        placeholder="Interview Question"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        className="w-full border rounded-xl p-4 mb-5"
+      />
+
+      <textarea
+        rows={8}
+        placeholder="Type your interview answer..."
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        className="w-full border rounded-xl p-4"
+      />
+
+      <button
+        onClick={evaluate}
+        className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-xl"
+      >
+        {loading ? "Evaluating..." : "Evaluate Answer"}
+      </button>
+
+      {result && (
+
+        <div className="mt-10 space-y-6">
+
+          <div className="bg-white shadow rounded-xl p-6">
+
+            <h2 className="text-2xl font-bold">
+
+              Score
+
+            </h2>
+
+            <h1 className="text-5xl font-bold text-green-600 mt-3">
+
+              {result.score}/100
+
             </h1>
 
-            <hr />
+          </div>
 
-            <h3>
-                Interview Question
-            </h3>
+          <div className="bg-white shadow rounded-xl p-6">
 
-            <input
+            <h2 className="text-2xl font-bold mb-4">
 
-                type="text"
+              Strengths
 
-                value={question}
+            </h2>
 
-                onChange={(e) =>
-                    setQuestion(
-                        e.target.value
-                    )
-                }
+            <ul className="list-disc ml-6">
 
-                placeholder="Enter interview question"
+              {result.strengths.map((item, index) => (
 
-                style={{
-                    width: "100%",
-                    padding: "10px",
-                    marginBottom: "20px"
-                }}
+                <li key={index}>
 
-            />
+                  {item}
 
-            <h3>
-                Your Answer
-            </h3>
+                </li>
 
-            <textarea
+              ))}
 
-                rows="8"
+            </ul>
 
-                value={answer}
+          </div>
 
-                onChange={(e) =>
-                    setAnswer(
-                        e.target.value
-                    )
-                }
+          <div className="bg-white shadow rounded-xl p-6">
 
-                placeholder="Write your answer here..."
+            <h2 className="text-2xl font-bold mb-4">
 
-                style={{
-                    width: "100%",
-                    padding: "10px"
-                }}
+              Weaknesses
 
-            />
+            </h2>
 
-            <br />
-            <br />
+            <ul className="list-disc ml-6">
 
-            <button
+              {result.weaknesses.map((item, index) => (
 
-                onClick={
-                    evaluateAnswer
-                }
+                <li key={index}>
 
-                style={{
-                    padding: "12px 25px",
-                    cursor: "pointer"
-                }}
+                  {item}
 
-            >
+                </li>
 
-                Evaluate Answer
+              ))}
 
-            </button>
+            </ul>
 
-            {
+          </div>
 
-                result &&
+          <div className="bg-white shadow rounded-xl p-6">
 
-                <div
+            <h2 className="text-2xl font-bold mb-4">
 
-                    style={{
-                        marginTop: "30px",
-                        border: "1px solid gray",
-                        padding: "20px",
-                        borderRadius: "10px"
-                    }}
+              AI Feedback
 
-                >
+            </h2>
 
-                    <h2>
-                        Result
-                    </h2>
+            <p>
 
-                    <p>
+              {result.feedback}
 
-                        <b>
-                            Question :
-                        </b>
+            </p>
 
-                        {" "}
+          </div>
 
-                        {result.question}
+          <div className="bg-white shadow rounded-xl p-6">
 
-                    </p>
+            <h2 className="text-2xl font-bold mb-4">
 
-                    <p>
+              Improved Answer
 
-                        <b>
-                            Score :
-                        </b>
+            </h2>
 
-                        {" "}
+            <p className="whitespace-pre-wrap">
 
-                        {result.score}
+              {result.improvedAnswer}
 
-                        /10
+            </p>
 
-                    </p>
-
-                    <h3>
-                        Feedback
-                    </h3>
-
-                    <ul>
-
-                        {
-
-                            result.feedback.map(
-                                (
-                                    item,
-                                    index
-                                ) => (
-
-                                    <li
-                                        key={index}
-                                    >
-                                        {item}
-                                    </li>
-
-                                )
-                            )
-
-                        }
-
-                    </ul>
-
-                </div>
-
-            }
+          </div>
 
         </div>
 
-    );
+      )}
+
+    </div>
+
+  );
+
 }
 
 export default InterviewEvaluation;

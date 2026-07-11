@@ -1,178 +1,95 @@
-
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import API from "../services/api";
-import AnimatedPage from "../components/AnimatedPage";
-import { Bot, User, SendHorizonal } from "lucide-react";
 
-export default function AIAssistant() {
-  const [messages, setMessages] = useState([
-    {
-      sender: "ai",
-      text: "👋 Hello! I'm your AI Career Assistant. Ask me about jobs, resumes, interviews, or career guidance.",
-    },
-  ]);
+function AIAssistant() {
 
   const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const bottomRef = useRef(null);
+  const askAI = async () => {
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
-  }, [messages]);
-
-  const sendMessage = async () => {
-    if (!question.trim()) return;
-
-    const userMessage = {
-      sender: "user",
-      text: question,
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    const currentQuestion = question;
-
-    setQuestion("");
-    setLoading(true);
+    if (!question) {
+      alert("Please enter your question.");
+      return;
+    }
 
     try {
-      const res = await API.post("/api/ai-chat", {
-        question: currentQuestion,
-      });
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          sender: "ai",
-          text: res.data.answer,
-        },
-      ]);
-    } catch (err) {
-      console.log(err);
+      setLoading(true);
 
-      setMessages((prev) => [
-        ...prev,
+      const { data } = await API.post(
+        "/career-assistant/chat",
         {
-          sender: "ai",
-          text: "❌ Failed to get AI response.",
-        },
-      ]);
+          question,
+        }
+      );
+
+      setAnswer(data.answer);
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Failed to get AI response.");
+
+    } finally {
+
+      setLoading(false);
+
     }
 
-    setLoading(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
-    }
   };
 
   return (
-    <AnimatedPage>
-      <div className="h-screen bg-slate-100 flex flex-col">
 
-        {/* Header */}
+    <div className="max-w-5xl mx-auto p-8">
 
-        <div className="bg-white shadow-md px-6 py-4 flex items-center gap-3">
+      <h1 className="text-4xl font-bold mb-8">
 
-          <Bot className="text-blue-600" size={32} />
+        🤖 AI Career Assistant
 
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              AI Career Assistant
-            </h1>
+      </h1>
 
-            <p className="text-sm text-slate-500">
-              Ask anything about jobs, resumes and interviews
-            </p>
-          </div>
+      <textarea
+        rows={5}
+        placeholder="Ask anything about resume, interview, career roadmap, salary, skills..."
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        className="w-full border rounded-xl p-4"
+      />
 
-        </div>
+      <button
+        onClick={askAI}
+        className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-xl"
+      >
+        {loading ? "Thinking..." : "Ask AI"}
+      </button>
 
-        {/* Chat */}
+      {answer && (
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
+        <div className="mt-10 bg-white rounded-xl shadow-lg p-8">
 
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex ${
-                msg.sender === "user"
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
-              <div
-                className={`max-w-3xl rounded-2xl px-5 py-4 shadow flex gap-3 ${
-                  msg.sender === "user"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-slate-700"
-                }`}
-              >
-                <div>
-                  {msg.sender === "user" ? (
-                    <User size={22} />
-                  ) : (
-                    <Bot size={22} className="text-blue-600" />
-                  )}
-                </div>
+          <h2 className="text-2xl font-bold mb-5">
 
-                <div className="whitespace-pre-wrap">
-                  {msg.text}
-                </div>
-              </div>
-            </div>
-          ))}
+            AI Response
 
-          {loading && (
-            <div className="flex justify-start">
+          </h2>
 
-              <div className="bg-white rounded-2xl px-5 py-4 shadow">
+          <div className="whitespace-pre-wrap leading-8">
 
-                🤖 AI is thinking...
-
-              </div>
-
-            </div>
-          )}
-
-          <div ref={bottomRef}></div>
-
-        </div>
-
-        {/* Input */}
-
-        <div className="bg-white border-t p-5">
-
-          <div className="flex gap-3">
-
-            <input
-              type="text"
-              placeholder="Ask your question..."
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1 border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <button
-              onClick={sendMessage}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl flex items-center gap-2 transition"
-            >
-              <SendHorizonal size={18} />
-              Send
-            </button>
+            {answer}
 
           </div>
 
         </div>
 
-      </div>
-    </AnimatedPage>
+      )}
+
+    </div>
+
   );
+
 }
+
+export default AIAssistant;

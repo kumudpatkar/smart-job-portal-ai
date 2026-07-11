@@ -1,505 +1,216 @@
-import { useRef, useState } from "react";
+import { useState, useRef } from "react";
 import API from "../services/api";
 
 function VoiceInterview() {
 
-    const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [result, setResult] = useState(null);
 
-    const [transcript, setTranscript] = useState("");
+  const recognitionRef = useRef(null);
 
-    const [result, setResult] = useState(null);
+  const startRecording = () => {
 
-    const [recording, setRecording] = useState(false);
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
 
-    const [loading, setLoading] = useState(false);
+    if (!SpeechRecognition) {
 
-    const mediaRecorder = useRef(null);
+      alert("Speech Recognition is not supported.");
 
-    const audioChunks = useRef([]);
+      return;
 
-    // ================= ASK QUESTION =================
+    }
 
-    const askQuestion = () => {
+    const recognition = new SpeechRecognition();
 
-        const q =
-            "Tell me about yourself, your skills, and a project you worked on.";
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
 
-        setQuestion(q);
+    recognition.onresult = (event) => {
 
-        setTranscript("");
-
-        setResult(null);
-
-        speechSynthesis.cancel();
-
-        speechSynthesis.speak(
-            new SpeechSynthesisUtterance(q)
-        );
+      setAnswer(event.results[0][0].transcript);
 
     };
 
-    // ================= START RECORDING =================
+    recognition.start();
 
-    const startRecording = async () => {
+    recognitionRef.current = recognition;
 
-        try {
+  };
 
-            const stream =
-                await navigator.mediaDevices.getUserMedia({
-                    audio: true
-                });
+  const evaluateAnswer = async () => {
 
-            audioChunks.current = [];
+    if (!question || !answer) {
 
-            mediaRecorder.current =
-                new MediaRecorder(stream);
+      alert("Question and answer required");
 
-            mediaRecorder.current.ondataavailable =
-                (event) => {
+      return;
 
-                    if (event.data.size > 0) {
+    }
 
-                        audioChunks.current.push(
-                            event.data
-                        );
+    try {
 
-                    }
-
-                };
-
-            mediaRecorder.current.start();
-
-            setRecording(true);
-
+      const { data } = await API.post(
+        "/voice-interview/evaluate",
+        {
+          question,
+          answer,
         }
+      );
 
-        catch (err) {
+      setResult(data.result);
 
-            console.log(err);
+    } catch (error) {
 
-            alert(
-                "Microphone permission denied"
-            );
+      console.log(error);
 
-        }
+      alert("Evaluation failed.");
 
-    };
+    }
 
-    // ================= STOP RECORDING =================
+  };
 
-    const stopRecording = () => {
+  return (
 
-        if (!mediaRecorder.current)
-            return;
+    <div className="max-w-5xl mx-auto p-8">
 
-        mediaRecorder.current.stop();
+      <h1 className="text-4xl font-bold mb-8">
 
-        setRecording(false);
+        🎤 AI Voice Interview
 
-        mediaRecorder.current.onstop =
-            async () => {
+      </h1>
 
-                const audioBlob =
-                    new Blob(
-                        audioChunks.current,
-                        {
-                            type:
-                                "audio/webm"
-                        }
-                    );
+      <textarea
+        rows={3}
+        placeholder="Interview Question"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        className="w-full border rounded-xl p-4 mb-5"
+      />
 
-                const formData =
-                    new FormData();
+      <textarea
+        rows={8}
+        value={answer}
+        onChange={(e) => setAnswer(e.target.value)}
+        placeholder="Your spoken answer..."
+        className="w-full border rounded-xl p-4"
+      />
 
-                formData.append(
-                    "audio",
-                    audioBlob,
-                    "voice.webm"
-                );
+      <div className="flex gap-4 mt-6">
 
-                try {
-
-                    setLoading(true);
-
-                    const res =
-                        await API.post(
-
-                            "/api/voice-interview",
-
-                            formData,
-
-                            {
-                                headers: {
-                                    "Content-Type":
-                                        "multipart/form-data"
-                                }
-                            }
-
-                        );
-
-                    console.log(
-                        res.data
-                    );
-
-                    setTranscript(
-                        res.data.transcript
-                    );
-
-                }
-
-                catch (err) {
-
-                    console.log(err);
-
-                    alert(
-                        "Speech recognition failed"
-                    );
-
-                }
-
-                finally {
-
-                    setLoading(false);
-
-                }
-
-            };
-
-    };
-
-    // ================= EVALUATE =================
-
-    const evaluateAnswer = async () => {
-
-        if (!transcript) {
-
-            alert(
-                "Please record your answer first."
-            );
-
-            return;
-
-        }
-
-        try {
-
-            setLoading(true);
-
-            const cleanAnswer =
-                transcript.replace(
-                    /\n/g,
-                    " "
-                );
-
-            const res =
-                await API.post(
-
-                    "/api/evaluate-interview",
-
-                    {
-                        question:
-                            question,
-
-                        answer:
-                            cleanAnswer
-                    }
-
-                );
-
-            console.log(
-                res.data
-            );
-
-            setResult(
-                res.data
-            );
-
-        }
-
-        catch (err) {
-
-            console.log(
-                err
-            );
-
-            console.log(
-                err.response
-            );
-
-            alert(
-                "Evaluation failed"
-            );
-
-        }
-
-        finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    return (
-
-        <div
-
-            style={{
-
-                maxWidth: "900px",
-
-                margin: "auto",
-
-                padding: "25px",
-
-                fontFamily: "Arial"
-
-            }}
-
+        <button
+          onClick={startRecording}
+          className="bg-green-600 text-white px-6 py-3 rounded-xl"
         >
+          🎤 Start Speaking
+        </button>
 
-            <h1>
+        <button
+          onClick={evaluateAnswer}
+          className="bg-blue-600 text-white px-6 py-3 rounded-xl"
+        >
+          Evaluate
+        </button>
 
-                🎤 PRO AI Voice Interview Bot
+      </div>
 
-            </h1>
+      {
 
-            <hr />
+        result && (
 
-            <br />
+          <div className="mt-10 space-y-6">
 
-            <button
+            <div className="bg-white rounded-xl shadow p-6">
 
-                onClick={askQuestion}
+              <h2 className="text-2xl font-bold">
 
-                style={{
+                Score
 
-                    padding: "10px 15px",
+              </h2>
 
-                    cursor: "pointer"
+              <h1 className="text-5xl text-green-600 font-bold">
 
-                }}
+                {result.score}/100
 
-            >
-
-                Ask Question 🔊
-
-            </button>
-
-            <h3>
-
-                {question}
-
-            </h3>
-
-            <hr />
-
-            <button
-
-                onClick={startRecording}
-
-                disabled={recording}
-
-                style={{
-
-                    padding: "10px",
-
-                    background: "green",
-
-                    color: "white",
-
-                    border: "none",
-
-                    cursor: "pointer"
-
-                }}
-
-            >
-
-                🎙 Start Recording
-
-            </button>
-
-            <button
-
-                onClick={stopRecording}
-
-                disabled={!recording}
-
-                style={{
-
-                    marginLeft: "10px",
-
-                    padding: "10px",
-
-                    background: "red",
-
-                    color: "white",
-
-                    border: "none",
-
-                    cursor: "pointer"
-
-                }}
-
-            >
-
-                ⛔ Stop Recording
-
-            </button>
-
-            <br />
-            <br />
-
-            {
-
-                loading &&
-
-                <h3>
-
-                    Processing...
-
-                </h3>
-
-            }
-
-            <div
-
-                style={{
-
-                    border: "1px solid gray",
-
-                    padding: "15px",
-
-                    borderRadius: "10px",
-
-                    minHeight: "120px",
-
-                    background: "#f8f8f8"
-
-                }}
-
-            >
-
-                <h3>
-
-                    Your Answer
-
-                </h3>
-
-                <p>
-
-                    {transcript}
-
-                </p>
+              </h1>
 
             </div>
 
-            <br />
+            <div className="bg-white rounded-xl shadow p-6">
 
-            <button
+              <h2 className="text-2xl font-bold">
 
-                onClick={evaluateAnswer}
+                Feedback
 
-                style={{
+              </h2>
 
-                    padding: "12px 20px",
+              <p className="mt-3">
 
-                    background: "#007bff",
+                {result.feedback}
 
-                    color: "white",
+              </p>
 
-                    border: "none",
+            </div>
 
-                    cursor: "pointer"
+            <div className="bg-white rounded-xl shadow p-6">
 
-                }}
+              <h2 className="text-2xl font-bold">
 
-            >
+                Strengths
 
-                Evaluate Answer 🤖
+              </h2>
 
-            </button>
+              <ul className="list-disc ml-6 mt-3">
 
-            {
+                {
 
-                result &&
+                  result.strengths.map((item, index) => (
 
-                <div
+                    <li key={index}>{item}</li>
 
-                    style={{
+                  ))
 
-                        marginTop: "30px",
+                }
 
-                        border: "1px solid #ddd",
+              </ul>
 
-                        padding: "20px",
+            </div>
 
-                        borderRadius: "10px"
+            <div className="bg-white rounded-xl shadow p-6">
 
-                    }}
+              <h2 className="text-2xl font-bold">
 
-                >
+                Improvements
 
-                    <h2>
+              </h2>
 
-                        📊 Score :
+              <ul className="list-disc ml-6 mt-3">
 
-                        {" "}
+                {
 
-                        {result.score}
+                  result.improvements.map((item, index) => (
 
-                        /10
+                    <li key={index}>{item}</li>
 
-                    </h2>
+                  ))
 
-                    <h3>
+                }
 
-                        💡 Feedback
+              </ul>
 
-                    </h3>
+            </div>
 
-                    <ul>
+          </div>
 
-                        {
+        )
 
-                            result.feedback &&
+      }
 
-                            result.feedback.map(
+    </div>
 
-                                (
-
-                                    item,
-
-                                    index
-
-                                ) => (
-
-                                    <li
-
-                                        key={index}
-
-                                    >
-
-                                        {item}
-
-                                    </li>
-
-                                )
-
-                            )
-
-                        }
-
-                    </ul>
-
-                </div>
-
-            }
-
-        </div>
-
-    );
+  );
 
 }
 

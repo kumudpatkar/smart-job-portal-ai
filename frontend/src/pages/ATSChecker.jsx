@@ -1,114 +1,120 @@
 import { useState } from "react";
+import DashboardLayout from "../layouts/DashboardLayout";
+import ATSScoreCard from "../components/ATSScoreCard";
 import API from "../services/api";
 
 function ATSChecker() {
-  const [jobRole, setJobRole] = useState("");
-  const [result, setResult] = useState(null);
+
+  const [file, setFile] = useState(null);
+
   const [loading, setLoading] = useState(false);
 
-  const checkATS = async () => {
-    if (!jobRole) {
-      alert("Please enter a Job Role.");
+  const [result, setResult] = useState(null);
+
+  const analyzeResume = async () => {
+
+    if (!file) {
+
+      alert("Please upload your resume.");
+
       return;
+
     }
 
     try {
+
       setLoading(true);
 
-      const { data } = await API.post("/ats/check", {
-        jobRole,
-      });
+      const formData = new FormData();
 
-      setResult(data.result);
+      formData.append("resume", file);
+
+      const { data } = await API.post(
+        "/ats/analyze",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setResult(data);
 
     } catch (error) {
+
       console.log(error);
-      alert("Failed to check ATS score.");
+
+      alert("ATS Analysis Failed");
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
 
-      <h1 className="text-4xl font-bold mb-8">
-        ATS Resume Checker
-      </h1>
+    <DashboardLayout>
 
-      <input
-        type="text"
-        placeholder="Enter Job Role (Example: AI/ML Engineer)"
-        value={jobRole}
-        onChange={(e) => setJobRole(e.target.value)}
-        className="w-full border rounded-xl p-3"
-      />
+      <div className="max-w-6xl mx-auto">
 
-      <button
-        onClick={checkATS}
-        className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl"
-      >
-        {loading ? "Checking..." : "Check ATS Score"}
-      </button>
+        <h1 className="text-4xl font-bold mb-3">
 
-      {result && (
+          ATS Resume Checker
 
-        <div className="mt-10 bg-white shadow-lg rounded-2xl p-8">
+        </h1>
 
-          <h2 className="text-3xl font-bold text-green-600">
-            ATS Score: {result.atsScore}%
-          </h2>
+        <p className="text-gray-500 mb-10">
 
-          <div className="mt-8">
+          Upload your resume and get an AI-powered ATS score with skill analysis and recommendations.
 
-            <h3 className="text-xl font-semibold mb-3">
-              Matched Keywords
-            </h3>
+        </p>
 
-            <ul className="list-disc ml-6">
+        <div className="bg-white rounded-3xl shadow-xl p-8">
 
-              {result.matchedKeywords.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
+          <input
 
-            </ul>
+            type="file"
 
-          </div>
+            accept=".pdf,.doc,.docx"
 
-          <div className="mt-8">
+            onChange={(e) =>
+              setFile(e.target.files[0])
+            }
 
-            <h3 className="text-xl font-semibold mb-3">
-              Missing Keywords
-            </h3>
+            className="w-full border rounded-xl p-4"
 
-            <ul className="list-disc ml-6">
+          />
 
-              {result.missingKeywords.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
+          <button
 
-            </ul>
+            onClick={analyzeResume}
 
-          </div>
+            disabled={loading}
 
-          <div className="mt-8">
+            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl text-lg font-semibold"
 
-            <h3 className="text-xl font-semibold mb-3">
-              AI Suggestion
-            </h3>
+          >
 
-            <div className="bg-gray-100 rounded-xl p-5">
-              {result.suggestion}
-            </div>
+            {loading
+              ? "Analyzing Resume..."
+              : "Analyze Resume"}
 
-          </div>
+          </button>
 
         </div>
 
-      )}
+        <ATSScoreCard result={result} />
 
-    </div>
+      </div>
+
+    </DashboardLayout>
+
   );
+
 }
 
 export default ATSChecker;
