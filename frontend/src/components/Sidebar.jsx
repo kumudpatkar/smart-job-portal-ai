@@ -14,6 +14,7 @@ import {
   BarChart3,
   Code2,
   Trophy,
+  Globe,
 } from "lucide-react";
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -127,6 +128,18 @@ const Sidebar = () => {
       icon: <BarChart3 size={20} />,
       path: "/hiring-dashboard",
     },
+    {
+  title: "LinkedIn Optimizer",
+  icon: <Globe size={20} />,
+  path: "/linkedin-optimizer",
+},
+
+    {
+  title: "Portfolio Generator",
+  icon: <User size={20} />,
+  path: "/portfolio-generator",
+},
+
     {
       title: "Settings",
       icon: <Settings size={20} />,

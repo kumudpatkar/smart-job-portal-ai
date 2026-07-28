@@ -1,4 +1,5 @@
-import { Linkedin, Globe } from "lucide-react";
+import { Globe } from "lucide-react";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 
 const SocialLinks = () => {
   return (
@@ -7,44 +8,50 @@ const SocialLinks = () => {
         Social Links
       </h2>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
+
+        {/* LinkedIn */}
         <div>
-          <label className="flex items-center gap-2 mb-2">
-            <Linkedin size={18} />
+          <label className="flex items-center gap-2 mb-2 font-medium">
+            <FaLinkedin className="text-blue-600" size={18} />
             LinkedIn
           </label>
 
           <input
-            type="text"
-            placeholder="LinkedIn URL"
-            className="w-full border rounded-lg p-3"
+            type="url"
+            placeholder="https://linkedin.com/in/your-profile"
+            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
+        {/* GitHub */}
         <div>
-          <label className="mb-2 block">
+          <label className="flex items-center gap-2 mb-2 font-medium">
+            <FaGithub size={18} />
             GitHub
           </label>
 
           <input
-            type="text"
-            placeholder="GitHub URL"
-            className="w-full border rounded-lg p-3"
+            type="url"
+            placeholder="https://github.com/your-username"
+            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-gray-500"
           />
         </div>
 
+        {/* Portfolio */}
         <div>
-          <label className="flex items-center gap-2 mb-2">
+          <label className="flex items-center gap-2 mb-2 font-medium">
             <Globe size={18} />
             Portfolio
           </label>
 
           <input
-            type="text"
-            placeholder="Portfolio URL"
-            className="w-full border rounded-lg p-3"
+            type="url"
+            placeholder="https://yourportfolio.com"
+            className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
         </div>
+
       </div>
     </div>
   );

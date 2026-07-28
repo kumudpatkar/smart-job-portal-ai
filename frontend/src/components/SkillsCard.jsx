@@ -75,11 +75,7 @@ const SkillsCard = () => {
 
       </div>
 
-      <button
-        className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold hover:scale-105 transition-all duration-300 shadow-lg"
-      >
-        Save Skills
-      </button>
+      
 
     </div>
   );

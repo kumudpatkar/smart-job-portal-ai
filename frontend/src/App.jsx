@@ -24,6 +24,11 @@ import Analytics from "./pages/Analytics";
 import ResumeRanking from "./pages/ResumeRanking";
 import HiringDashboard from "./pages/HiringDashboard";
 import CodingInterview from "./pages/CodingInterview";
+import InterviewReport from "./pages/InterviewReport";
+import LinkedInOptimizer from "./pages/LinkedInOptimizer";
+import PortfolioGenerator from "./pages/PortfolioGenerator";
+import InterviewMode from "./pages/InterviewMode";
+
 function App() {
   return (
     <BrowserRouter>
@@ -113,6 +118,26 @@ function App() {
         <Route
   path="/coding-interview"
   element={<CodingInterview />}
+/>
+
+<Route
+  path="/interview-report"
+  element={<InterviewReport />}
+/>
+
+<Route
+  path="/linkedin-optimizer"
+  element={<LinkedInOptimizer />}
+/>
+
+<Route
+  path="/portfolio-generator"
+  element={<PortfolioGenerator />}
+/>
+
+<Route
+    path="/interview-mode"
+    element={<InterviewMode />}
 />
 
         {/* Settings */}

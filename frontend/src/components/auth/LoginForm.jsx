@@ -23,14 +23,29 @@ const LoginForm = () => {
     try {
       const { data } = await API.post("/auth/login", formData);
 
+      // Debug Response
+      console.log("LOGIN RESPONSE:", data);
+
+      // Save Login Data
       localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+
+      if (data.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+      }
+
       localStorage.setItem("isLoggedIn", "true");
+
+      console.log(
+        "Stored User:",
+        JSON.parse(localStorage.getItem("user"))
+      );
 
       alert("Login Successful");
 
       navigate("/dashboard");
     } catch (error) {
+      console.error(error);
+
       alert(
         error.response?.data?.message || "Login Failed"
       );
@@ -38,7 +53,10 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6 mt-6"
+    >
       <div>
         <label className="block mb-2 text-white font-medium">
           Email Address
@@ -73,7 +91,7 @@ const LoginForm = () => {
 
       <button
         type="submit"
-        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold hover:opacity-90 transition"
       >
         Sign In
       </button>

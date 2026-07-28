@@ -2,6 +2,17 @@ import { useState } from "react";
 import API from "../services/api";
 import AnimatedPage from "../components/AnimatedPage";
 
+import UploadResume from "../components/resume/UploadResume";
+import ATSScoreGauge from "../components/resume/ATSScoreGauge";
+import SkillsCard from "../components/resume/SkillsCard";
+import SummaryCard from "../components/resume/SummaryCard";
+import SuggestionsCard from "../components/resume/SuggestionsCard";
+import MissingSkillsCard from "../components/resume/MissingSkillsCard";
+import ATSBreakdown from "../components/resume/ATSBreakdown";
+import SkillChart from "../components/resume/SkillChart";
+import ResumeRadarChart from "../components/resume/ResumeRadarChart";
+import ResumePreview from "../components/resume/ResumePreview";
+
 const ResumeAnalyzer = () => {
   const [file, setFile] = useState(null);
   const [resume, setResume] = useState(null);
@@ -9,7 +20,7 @@ const ResumeAnalyzer = () => {
 
   const uploadResume = async () => {
     if (!file) {
-      alert("Please select a PDF resume.");
+      alert("Please upload a PDF or DOCX resume.");
       return;
     }
 
@@ -29,12 +40,10 @@ const ResumeAnalyzer = () => {
         }
       );
 
-      setResume(data.resume);
-
-      alert("Resume uploaded successfully!");
-
+      // Backend may return either { resume } or the object directly
+      setResume(data.resume || data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       alert("Resume upload failed.");
     } finally {
       setLoading(false);
@@ -43,133 +52,114 @@ const ResumeAnalyzer = () => {
 
   return (
     <AnimatedPage>
+      <div className="max-w-7xl mx-auto p-8">
 
-      <div className="max-w-5xl mx-auto p-8">
+        {/* Heading */}
+        <div className="mb-10">
+          <h1 className="text-5xl font-bold">
+            AI Resume Analyzer
+          </h1>
 
-        <h1 className="text-4xl font-bold mb-8">
-          AI Resume Analyzer
-        </h1>
-
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={(e) => setFile(e.target.files[0])}
-          />
-
-          <button
-            onClick={uploadResume}
-            disabled={loading}
-            className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl"
-          >
-            {loading ? "Uploading..." : "Upload Resume"}
-          </button>
-
+          <p className="text-gray-500 mt-3">
+            Upload your resume and receive a complete AI-powered ATS analysis.
+          </p>
         </div>
 
-</div>
+        {/* Upload Component */}
+        <UploadResume
+          onFileSelect={(selectedFile) => {
+            setFile(selectedFile);
+            setResume(null);
+          }}
+        />
 
-{resume && (
+        {/* Analyze Button */}
+        {file && (
+          <div className="mt-8">
+            <button
+              onClick={uploadResume}
+              disabled={loading}
+              className={`px-10 py-4 rounded-2xl text-lg font-semibold text-white transition-all ${
+                loading
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {loading
+                ? "Analyzing Resume..."
+                : "Analyze Resume"}
+            </button>
+          </div>
+        )}
 
-  <div className="mt-8 bg-white rounded-2xl shadow-lg p-8">
+        
 
-    <h2 className="text-3xl font-bold mb-6">
-      Resume Analysis
-    </h2>
+        {/* Results */}
+        {resume && (
+          <div className="mt-12 space-y-8">
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Top Cards */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <ATSScoreGauge score={resume.atsScore} />
+              <ATSBreakdown
 
-      <div className="mt-8 bg-white border rounded-2xl p-6">
+              
+  formatting={resume.formattingScore || 85}
+  keywords={resume.keywordScore || 72}
+  skills={resume.skillScore || 90}
+  experience={resume.experienceScore || 75}
+  education={resume.educationScore || 95}
+/>
+<SkillChart
+    skills={resume.skills}
+/>
 
-  <h2 className="text-2xl font-bold mb-4">
-    📝 AI Resume Summary
-  </h2>
+<ResumeRadarChart
+  communication={resume.communicationScore || 80}
+  technical={resume.technicalScore || 92}
+  projects={resume.projectScore || 86}
+  education={resume.educationScore || 90}
+  experience={resume.experienceScore || 72}
+  leadership={resume.leadershipScore || 78}
+/>
+              <SkillsCard
+                skills={resume.skills || []}
+              />
+            </div>
 
-  <p className="text-gray-700 leading-7">
-    {resume.summary}
-  </p>
+            {/* Summary */}
+            <SummaryCard
+              summary={
+                resume.summary ||
+                "No summary available."
+              }
+            />
 
-</div>
+            {/* Suggestions */}
+            <SuggestionsCard
+              suggestions={
+                resume.suggestions || []
+              }
+            />
 
-<div className="mt-8 bg-white border rounded-2xl p-6">
+            {/* Missing Skills */}
+            <MissingSkillsCard
+              skills={
+                resume.missingSkills || []
+              }
+            />
 
-  <h2 className="text-2xl font-bold mb-5">
-    💡 AI Suggestions
-  </h2>
+            <ResumePreview
+  resumeText={resume.resumeText || ""}
+  foundKeywords={resume.skills || []}
+  missingKeywords={resume.missingSkills || []}
+/>
 
-  <ul className="space-y-3">
-
-    {resume.suggestions.map((item, index) => (
-
-      <li
-        key={index}
-        className="bg-blue-50 p-3 rounded-lg"
-      >
-        ✅ {item}
-      </li>
-
-    ))}
-
-  </ul>
-
-</div>
-
-<div className="mt-8 bg-white border rounded-2xl p-6">
-
-  <h2 className="text-2xl font-bold mb-5">
-    🚀 Missing Skills
-  </h2>
-
-  <div className="flex flex-wrap gap-3">
-
-    {resume.missingSkills.map((skill, index) => (
-
-      <span
-        key={index}
-        className="bg-red-100 text-red-700 px-4 py-2 rounded-full"
-      >
-        {skill}
-      </span>
-
-    ))}
-
-  </div>
-
-</div>
-
-      <div className="bg-blue-100 rounded-xl p-6">
-
-        <h3 className="text-xl font-bold">
-          ATS Score
-        </h3>
-
-        <p className="text-5xl font-bold text-blue-700 mt-4">
-          {resume.atsScore}%
-        </p>
+          </div>
+        )}
 
       </div>
-
-      <div className="bg-green-100 rounded-xl p-6">
-
-        <h3 className="text-xl font-bold">
-          Skills Found
-        </h3>
-
-        <p className="text-5xl font-bold text-green-700 mt-4">
-          {resume.skills.length}
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
-
-)}
-
-</AnimatedPage>
-      
+    </AnimatedPage>
   );
 };
 

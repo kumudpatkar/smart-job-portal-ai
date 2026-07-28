@@ -22,7 +22,7 @@ function JobRecommendation() {
         "/job-recommendation"
       );
 
-      setJobs(data.recommendations);
+      setJobs(data.jobs || []);
 
     } catch (error) {
 
@@ -79,7 +79,7 @@ function JobRecommendation() {
             {jobs.map((job) => (
 
               <div
-                key={job.jobId}
+                key={job._id}
                 className="bg-white rounded-3xl shadow-xl p-8 hover:shadow-2xl transition"
               >
 
@@ -148,7 +148,7 @@ function JobRecommendation() {
 
                     </span>
 
-                    <p>{job.location}</p>
+                    <p>{job.location || "Remote"}</p>
 
                   </div>
 
@@ -160,8 +160,7 @@ function JobRecommendation() {
 
                     </span>
 
-                    <p>{job.salary}</p>
-
+                    <p>{job.salary || "Not disclosed"}</p>
                   </div>
 
                   <div>
@@ -172,7 +171,7 @@ function JobRecommendation() {
 
                     </span>
 
-                    <p>{job.jobType}</p>
+                    <p>{job.jobType || "Full Time"}</p>
 
                   </div>
 
@@ -190,8 +189,8 @@ function JobRecommendation() {
 
                   <div className="flex flex-wrap gap-2 mt-3">
 
-                    {job.matchingSkills.map((skill, index) => (
-
+                    
+{(job.strengths || []).map((skill, index) => (
                       <span
                         key={index}
                         className="bg-green-100 text-green-700 px-3 py-1 rounded-full"
@@ -219,7 +218,7 @@ function JobRecommendation() {
 
                   <div className="flex flex-wrap gap-2 mt-3">
 
-                    {job.missingSkills.map((skill, index) => (
+                    {(job.missingSkills || []).map((skill, index) => (
 
                       <span
                         key={index}
@@ -248,7 +247,7 @@ function JobRecommendation() {
 
                   <p className="mt-2">
 
-                    {job.recommendation}
+                   {job.reason}
 
                   </p>
 

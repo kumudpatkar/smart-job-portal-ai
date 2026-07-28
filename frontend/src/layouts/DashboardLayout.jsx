@@ -1,11 +1,18 @@
 import Sidebar from "../components/Sidebar";
 import { LogOut, Bell, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import Avatar from "../components/Avatar";
 
 const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user")) || {};
+
+  // Use name or fullName
+  const userName = user.name || user.fullName || "";
+
+  // Generate initials (KP, RS, V, etc.)
+  
 
   const logout = () => {
     localStorage.removeItem("isLoggedIn");
@@ -32,7 +39,7 @@ const DashboardLayout = ({ children }) => {
             </h2>
 
             <p className="text-sm text-slate-500">
-              Welcome back, {user.name || "User"}
+              Welcome back, {userName || "User"}
             </p>
           </div>
 
@@ -41,7 +48,6 @@ const DashboardLayout = ({ children }) => {
 
             {/* Search */}
             <div className="hidden lg:flex items-center bg-slate-100 rounded-xl px-4 py-2 w-72">
-
               <Search
                 size={18}
                 className="text-slate-500"
@@ -52,37 +58,29 @@ const DashboardLayout = ({ children }) => {
                 placeholder="Search..."
                 className="bg-transparent ml-3 outline-none w-full"
               />
-
             </div>
 
             {/* Notification */}
             <button className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 transition">
-
               <Bell size={20} />
-
             </button>
 
             {/* Avatar */}
-            <div className="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg">
-
-              {user.name
-                ? user.name.charAt(0).toUpperCase()
-                : "U"}
-
-            </div>
+            
 
             {/* Logout */}
             <button
               onClick={logout}
               className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition"
             >
-
               <LogOut size={18} />
-
               Logout
-
             </button>
-
+<Avatar
+  name={userName}
+  image={user.profileImage}
+  size="md"
+/>
           </div>
 
         </header>
