@@ -43,8 +43,7 @@ const token = localStorage.getItem("token");
 
 const response = await axios.post(
 
-`http://localhost:5000/api/applications/apply/${jobId}`,
-
+https://smart-job-portal-ai-5nwt.onrender.com/api/applications/apply/${jobId},
 formData,
 
 {

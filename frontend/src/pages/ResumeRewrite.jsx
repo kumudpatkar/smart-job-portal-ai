@@ -10,7 +10,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-const API = "http://localhost:5000";
+const API = "https://smart-job-portal-ai-5nwt.onrender.com";
 
 export default function ResumeRewrite() {
   const [resume, setResume] = useState(null);
